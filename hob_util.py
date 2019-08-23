@@ -10,7 +10,7 @@ def get_hob_csv_flopy(mfname):
     mf = flopy.modflow.Modflow.load(mfname, load_only=['DIS', 'BAS6', 'HOB'])
     xx = 1
 
-def in_hob_to_df(mfname = None):
+def in_hob_to_df(mfname = None, return_model = False):
     """
     Load an HOB file and convert inf to csv file.
 
@@ -81,7 +81,7 @@ def in_hob_to_df(mfname = None):
         line = f.readline()
         t = line.strip().split()
         obsnam = t[0]
-        print(obsnam)
+        # print(obsnam)
         layer = int(t[1])
         row = int(t[2]) - 1
         col = int(t[3]) - 1
@@ -119,7 +119,7 @@ def in_hob_to_df(mfname = None):
             names = [obsnam]
             tsd = [totim, hob]
             nobs += 1
-            all_records.append([names[0], layer + 1, row + 1, col + 1, roff, coff, 1, irefsp0 + 1, totim, hob, mlay])
+            all_records.append([names[0], names[0], layer + 1, row + 1, col + 1, roff, coff, 1, irefsp0 + 1, totim, hob, mlay])
         else:
             names = []
             tsd = []
@@ -139,15 +139,65 @@ def in_hob_to_df(mfname = None):
                 hob = float(t[3])
                 tsd.append([totim, hob])
                 nobs += 1
+                name2 = name.split('.')[0]
 
-                all_records.append([name, layer+1, row+1, col+1,  roff, coff, j+1,  irefsp+1, totim, hob, mlay])
+                all_records.append([name2, name, layer+1, row+1, col+1,  roff, coff, j+1,  irefsp+1, totim, hob, mlay])
 
 
         if nobs == nh:
             break
 
     # close the file
-    label1 = ['name', 'layer', 'row', 'col', 'roff', 'coff', 'tim_id', 'stress_period', 'totim', 'head', 'mlay']
+    label1 = ['Basename', 'name', 'layer', 'row', 'col', 'roff', 'coff', 'tim_id', 'stress_period', 'totim', 'head', 'mlay']
     df = pd.DataFrame(all_records, columns=label1)
-    return df
+
+    if return_model:
+        return model, df
+    else:
+        return df
+
+
+def hob_output_to_df(mfname, mf = None):
+    # get all files
+    mf_files = get_mf_files(mfname)
+
+    # read mf and get spatial reference
+    if mf is None:
+        mf = flopy.modflow.Modflow.load(mfname)
+
+    # read_hob_out
+    for file in mf_files.keys():
+        fn = mf_files[file][1]
+        basename = os.path.basename(fn)
+        if ".hob.out" in basename:
+            hobout_df = pd.read_csv(fn, delim_whitespace=True)
+    hob_basename = []
+
+    for hobname in hobout_df['OBSERVATION NAME'].values:
+        if '.' in hobname:
+            hob_basename.append(hobname.split('.')[0])
+        else:
+            hob_basename.append(hobname)
+    hobout_df['Basename'] = hob_basename
+    return hobout_df
+
+
+def hob_output_to_shp(mfname, mf = None, epsg = None ):
+
+    # get all files
+    mf_files = get_mf_files(mfname)
+
+    # read mf and get spatial reference
+    mf, hobin_df = in_hob_to_df(mfname=mfname, return_model=True)
+
+    hobout_df = hob_output_to_df(mfname = mfname, mf = mf)
+
+    # compute the coordinates of each point and generate the geom
+
+
+    # compute error statistics
+    xx = 1
+
+    pass
+
 

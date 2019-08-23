@@ -9,13 +9,74 @@ matplotlib.rc('xtick', labelsize=14)
 matplotlib.rc('ytick', labelsize=14)
 import datetime
 import calendar
+import pandas as pd
 
 def xldate_to_datetime(start_date, tdelta):
     temp = start_date
     delta = datetime.timedelta(days=int(tdelta))
     return temp + delta
 
-def plot_all_heads(mfname, start_date, end_date):
+def add_simulated_all_layers(ax, row, col, layers, hds_obj, start_date):
+    # only get the date
+    head_ts = hds_obj.get_ts((0, row, col))
+    dates = []
+    for tdelta in head_ts[:, 0]:
+        curr_date = xldate_to_datetime(start_date, tdelta)
+        if calendar.isleap(curr_date.year):
+            curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 366.0
+        else:
+            curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
+        dates.append(curr_date)
+
+    for ilay in range(hds_obj.model.nlay):
+        head_ts = hds_obj.get_ts((ilay, row, col))
+        ib  = hds_obj.model.bas6.ibound.array[ilay, row, col]
+        head = head_ts[:, 1]
+        if ib == 1:
+            label = "Layer {}".format(ilay+1)
+            ax.plot(dates, head, label= label, linewidth=0.4)
+
+
+
+
+
+
+def add_simulated_multi_layer_heads(ax, row, col, layers, hds_obj, start_date):
+    """
+
+    Parameters
+    ----------
+    ax
+    row
+    col
+    layers
+    hds_obj
+    start_date
+
+    Returns
+    -------
+
+    """
+    for i, lay in enumerate(layers.keys()):
+        head_ts = hds_obj.get_ts((lay, row, col))
+        if i == 0:
+            head = head_ts[:, 1] * layers[lay]
+        else:
+            head = head + head_ts[:, 1] * layers[lay]
+    dates = []
+    for tdelta in head_ts[:, 0]:
+        curr_date = xldate_to_datetime(start_date, tdelta)
+        if calendar.isleap(curr_date.year):
+            curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 366.0
+        else:
+            curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
+        dates.append(curr_date)
+
+    ax.plot(dates, head, label = 'Simulated Water table', linewidth = 0.4)
+
+
+def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pdf',
+                   add_water_table = True):
     """
 
     :param mfname: modflow name file
@@ -38,8 +99,32 @@ def plot_all_heads(mfname, start_date, end_date):
     # Generate a dataframe for observations
     hob_df = hob_util.in_hob_to_df(mfname)
 
+    # read_hob_out
+    hobout_df = None
+    for file in mf_files.keys():
+        fn = mf_files[file][1]
+        basename = os.path.basename(fn)
+        if ".hob.out" in basename:
+            hobout_df = pd.read_csv(fn, delim_whitespace=True)
+
+    if not(hobout_df is None):
+        wellnms = []
+        timids = []
+        for irec, rec in hobout_df.iterrows():
+            well_name = rec['OBSERVATION NAME']
+            if '.' in well_name:
+                well_name, timid = well_name.split('.')
+            else:
+                well_name = well_name
+                timid = 0
+            wellnms.append(well_name)
+            timids.append(timid)
+        hobout_df['timid'] = timids
+        hobout_df['Wellname'] = wellnms
+
     #Load hds
     hds_obj = flopy.utils.HeadFile(hds_file)
+    hds_obj.model = mf
 
     #get well names
     well_names = []
@@ -54,40 +139,38 @@ def plot_all_heads(mfname, start_date, end_date):
     hob_df['id']  = well_ids
 
     # plot
+
+
     well_groups = hob_df.groupby('id')
-    with PdfPages('mod_3.pdf') as pdf:
+    with PdfPages(pdf_file) as pdf:
         for well in well_groups:
+            fig, ax = plt.subplots(1)
+            plt.style.use('bmh')
+
+            well_base_name = well[1]['Basename'].values[0]
             print(well[0])
+            is_multilayers = False
             col = well[1]['col'].values[0] - 1
             row = well[1]['row'].values[0] - 1
 
             if well[1]['mlay'].values[0] is None:
                 layers = well[1]['layer'].values[0]
             else:
+                is_multilayers = True
                 layers = well[1]['mlay'].values[0]
 
 
             #todo: deal with not multi-data
-            for i, lay in enumerate(layers.keys()):
-                head_ts = hds_obj.get_ts((lay, row, col))
-                if i == 0:
-                    head = head_ts[:,1] * layers[lay]
-                else:
-                    head = head + head_ts[:,1] * layers[lay]
-            dates = []
-            for tdelta in head_ts[:, 0]:
-                curr_date = xldate_to_datetime(start_date, tdelta)
-                if calendar.isleap(curr_date.year):
-                    curr_date = curr_date.year + curr_date.month/12.0 + curr_date.day/366.0
-                else:
-                    curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
-                dates.append(curr_date)
+            if 0:
+                add_simulated_multi_layer_heads(ax, row, col, layers, hds_obj, start_date)
 
-            plt.plot(dates, head)
+            # add all active layers
+            add_simulated_all_layers(ax, row, col, layers, hds_obj, start_date)
+
 
             # add obs
             dates = []
-            head = well[1]['head'].values
+            head1 = well[1]['head'].values
             for tdelta in well[1]['totim']:
                 curr_date = xldate_to_datetime(start_date, tdelta)
                 if calendar.isleap(curr_date.year):
@@ -95,9 +178,20 @@ def plot_all_heads(mfname, start_date, end_date):
                 else:
                     curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
                 dates.append(curr_date)
-            plt.scatter(dates, head, edgecolors= 'r')
-            plt.ylim([max(head) + 100, min(head)-100])
+            ax.scatter(dates, head1, marker='o', label = 'Observed Head', facecolors='none', edgecolors='r', s = 8)
+
+            # add hob simulated
+            curr_hob_out = hobout_df[hobout_df['Wellname'] ==  well_base_name]
+            head = curr_hob_out['SIMULATED EQUIVALENT'].values
+            ax.scatter(dates, head, marker='.', label='Simulated Heads',  edgecolors='b', s=10, linewidths = 1)
+
+
+            plt.ylim([min(head1)-100, max(head1) + 100])
             plt.title(well[0])
+            plt.xlabel("Date", fontsize=14)
+            plt.ylabel(" Head (ft)", fontsize=14)
+            plt.tight_layout()
+            plt.legend()
             pdf.savefig()
             plt.close()
             x = 1
