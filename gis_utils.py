@@ -24,7 +24,6 @@ def get_epsg(shp_file):
 
 def getWKT_PRJ(epsg_code):
     import urllib
-    #wkt = urllib.urlopen("http://spatialreference.org/ref/epsg/{0}/prettywkt/".format(epsg_code))
     with urllib.request.urlopen("http://spatialreference.org/ref/epsg/{0}/prettywkt/".format(epsg_code)) as url:
         wkt = url.read()
         # I'm guessing this would output the html source code ?

@@ -182,10 +182,22 @@ def hob_output_to_df(mfname, mf = None):
     return hobout_df
 
 
-def hob_output_to_shp(mfname, mf = None, epsg = None ):
+def hob_output_to_shp(mf = None):
+    """
+
+
+    Parameters
+    ----------
+    mf: is flopy object with modelgrid object that has nesseray project information
+
+    Returns
+    -------
+
+    """
 
     # get all files
-    mf_files = get_mf_files(mfname)
+    fn = os.path.join(mf.mf.namefile)
+    mf_files = get_mf_files(mf.model_ws, mf.namefile)
 
     # read mf and get spatial reference
     mf, hobin_df = in_hob_to_df(mfname=mfname, return_model=True)

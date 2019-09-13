@@ -33,8 +33,8 @@ def add_simulated_all_layers(ax, row, col, layers, hds_obj, start_date):
         ib  = hds_obj.model.bas6.ibound.array[ilay, row, col]
         head = head_ts[:, 1]
         if ib == 1:
-            label = "Layer {}".format(ilay+1)
-            ax.plot(dates, head, label= label, linewidth=0.4)
+            label = "Layer {}".format(ilay)
+            ax.plot(dates, head, label= label, linewidth=0.8, alpha = 1.0, zorder=1)
 
 
 
@@ -72,11 +72,11 @@ def add_simulated_multi_layer_heads(ax, row, col, layers, hds_obj, start_date):
             curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
         dates.append(curr_date)
 
-    ax.plot(dates, head, label = 'Simulated Water table', linewidth = 0.4)
+    ax.plot(dates, head, label = 'Simulated Water table', linewidth = 2.0)
 
 
 def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pdf',
-                   add_water_table = True):
+                   add_water_table = True, x_limit = [], obs_name_file = None):
     """
 
     :param mfname: modflow name file
@@ -138,15 +138,19 @@ def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pd
         well_ids.append(int(well_name.split('_')[1]))
     hob_df['id']  = well_ids
 
-    # plot
+    # get local names
+    local_names = pd.read_csv(obs_name_file)
 
 
     well_groups = hob_df.groupby('id')
     with PdfPages(pdf_file) as pdf:
         for well in well_groups:
             fig, ax = plt.subplots(1)
-            plt.style.use('bmh')
 
+
+            #plt.style.use('bmh')
+            plt.style.use('seaborn-deep')
+            #ax.set_facecolor('lightgreen')
             well_base_name = well[1]['Basename'].values[0]
             print(well[0])
             is_multilayers = False
@@ -178,21 +182,30 @@ def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pd
                 else:
                     curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
                 dates.append(curr_date)
-            ax.scatter(dates, head1, marker='o', label = 'Observed Head', facecolors='none', edgecolors='r', s = 8)
+            ax.scatter(dates, head1, marker='.', label = 'Observed Head', facecolors='none', edgecolors='r', s = 15, zorder=2)
 
             # add hob simulated
             curr_hob_out = hobout_df[hobout_df['Wellname'] ==  well_base_name]
             head = curr_hob_out['SIMULATED EQUIVALENT'].values
-            ax.scatter(dates, head, marker='.', label='Simulated Heads',  edgecolors='b', s=10, linewidths = 1)
+            ax.scatter(dates, head, marker=".", label='Simulated Heads',  facecolors='none', edgecolors='b', s=15, linewidths = 1, alpha = 0.8, zorder= 3)
 
 
             plt.ylim([min(head1)-100, max(head1) + 100])
-            plt.title(well[0])
+            locName = local_names.loc[local_names['ID']==well[0], 'Name']
+            try:
+                tit = "Well ID:{}" \
+                      "\n{}".format(well[0], locName.values[0])
+            except:
+                tit =  "Well ID:{}".format(well[0])
+            plt.title(tit)
             plt.xlabel("Date", fontsize=14)
             plt.ylabel(" Head (ft)", fontsize=14)
             plt.tight_layout()
             plt.legend()
+            plt.xlim(x_limit)
+            plt.grid(alpha=0.5, linestyle='--')
             pdf.savefig()
+
             plt.close()
             x = 1
 
