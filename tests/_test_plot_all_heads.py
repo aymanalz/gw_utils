@@ -6,7 +6,7 @@ import gw_utils
 import datetime
 
 
-mfname = r"D:\Models\Yucaipa\Yuc\pilot_KF_and_pest\model\model\tran_mf3d\yucaipa.nam"
+mfname = r"D:\Models\Yucaipa\ModelGitHub2\tran_mf3d\yucaipa.nam"
 start_date = datetime.datetime(1947, 1, 1)
 end_date = datetime.datetime(2014, 12, 31)
 

@@ -2,7 +2,9 @@ import os, sys
 from epsg_ident import EpsgIdent
 import pyproj
 import shapefile
-
+import flopy
+from flopy.utils.geometry import Polygon, LineString, Point
+from flopy.export.shapefile_utils import recarray2shp, shp2recarray
 
 def get_epsg(shp_file):
     """
@@ -32,3 +34,18 @@ def getWKT_PRJ(epsg_code):
     remove_spaces = wkt.replace(" ", "")
     output = remove_spaces.replace("\n", "")
     return output
+
+def point_to_shapefile(df, shpfile = 'temp_shp.shp', xy_field = [], epsg = None):
+    """
+    Convert a dataframe to shapefile.
+    Returns
+    -------
+    """
+    geoms = []
+    for irec, rec in df.iterrows():
+        x_ = rec[xy_field[0]]
+        y_ = rec[xy_field[1]]
+        geoms.append(Point(x_, y_, 0))
+    att_table = df.to_records()
+    recarray2shp(att_table, geoms, shpfile, epsg=epsg)
+    pass
