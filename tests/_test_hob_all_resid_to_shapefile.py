@@ -21,6 +21,6 @@ mf.dis.delc = mf.dis.delc.array * 0.3048
 mf.dis.delr = mf.dis.delr.array * 0.3048
 mf.modelgrid.set_coord_info(xoff = xoff, yoff = yoff, epsg = epsg)
 
-hob_resid_to_shapefile(mf)
+hob_resid_to_shapefile_all(mf)
 #hob_output_to_shp(mf)
 xxx = 1

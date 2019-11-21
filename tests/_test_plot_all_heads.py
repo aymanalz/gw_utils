@@ -1,12 +1,13 @@
 
 import sys
-sys.path.insert(0,r"D:\Models\Yucaipa\codes")
+sys.path.insert(0,r"D:\codes")
+print(sys.path)
 
 import gw_utils
 import datetime
 
 
-mfname = r"D:\Models\Yucaipa\ModelGitHub2\tran_mf3d\yucaipa.nam"
+mfname = r"D:\Yucaipa_work\tran_mf3d_best10_18 - Copy24\yucaipa.nam"
 start_date = datetime.datetime(1947, 1, 1)
 end_date = datetime.datetime(2014, 12, 31)
 

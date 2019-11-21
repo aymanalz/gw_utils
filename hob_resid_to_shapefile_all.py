@@ -16,7 +16,7 @@ import general_util
 def plot_hob_resid(mf):
     pass
 
-def hob_resid_to_shapefile(mf, stress_period = [0,-1], shpname = 'hob_shapefile.shp'):
+def hob_resid_to_shapefile_all(mf, stress_period = [0,-1], shpname = 'hob_shapefile.shp'):
 
     get_vertices = mf.modelgrid.get_cell_vertices
 
@@ -54,14 +54,19 @@ def hob_resid_to_shapefile(mf, stress_period = [0,-1], shpname = 'hob_shapefile.
         curr_hob = curr_hob[(curr_hob['stress_period']>=start) & (curr_hob['stress_period']<= endd)]
         curr_hob_out = hobout_df[hobout_df['OBSERVATION NAME'].isin(curr_hob['name'].values)]
         err = curr_hob_out['OBSERVED VALUE'] - curr_hob_out['SIMULATED EQUIVALENT']
+        curr_hob['OBSERVED VALUE'] = curr_hob_out['OBSERVED VALUE'].values
+        curr_hob['SIMULATED EQUIVALENT'] = curr_hob_out['SIMULATED EQUIVALENT'].values
+        curr_hob['err'] = err
         # n, mean, mse, mae
-        rec = [obs_, len(err), err.mean(), (err**2.0).mean()**0.5, (err.abs()).mean()]
+        #rec = [obs_, len(err), err.mean(), (err**2.0).mean()**0.5, (err.abs()).mean()]
         rrow = curr_hob['row'].values[0]-1
         coll = curr_hob['col'].values[0]-1
         xy = get_vertices(rrow, coll)
-        geoms.append(Point(xy[0][0], xy[0][1], 0))
-        all_rec.append(rec)
-    all_rec = pd.DataFrame(all_rec, columns= ['obsnme', 'nobs', 'am', 'mse', 'mae'])
+        for ierr in err:
+            geoms.append(Point(xy[0][0], xy[0][1], 0))
+        all_rec.append(curr_hob.copy())
+    all_rec = pd.concat(all_rec)
+    # here we generate csv file
     all_rec = all_rec.to_records()
     epsg = mf.modelgrid.epsg
     recarray2shp(all_rec, geoms, shpname, epsg=epsg)

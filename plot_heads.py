@@ -75,7 +75,7 @@ def add_simulated_multi_layer_heads(ax, row, col, layers, hds_obj, start_date):
     ax.plot(dates, head, label = 'Simulated Water table', linewidth = 2.0)
 
 
-def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pdf',
+def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels4.pdf',
                    add_water_table = True, x_limit = [], obs_name_file = None):
     """
 
@@ -182,12 +182,12 @@ def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels.pd
                 else:
                     curr_date = curr_date.year + curr_date.month / 12.0 + curr_date.day / 365.0
                 dates.append(curr_date)
-            ax.scatter(dates, head1, marker='.', label = 'Observed Head', facecolors='none', edgecolors='r', s = 15, zorder=2)
+            ax.scatter(dates, head1, marker='.', label = 'OBSERVED VALUE', facecolors='none', edgecolors='r', s = 14, zorder=2)
 
             # add hob simulated
             curr_hob_out = hobout_df[hobout_df['Wellname'] ==  well_base_name]
             head = curr_hob_out['SIMULATED EQUIVALENT'].values
-            ax.scatter(dates, head, marker=".", label='Simulated Heads',  facecolors='none', edgecolors='b', s=15, linewidths = 1, alpha = 0.8, zorder= 3)
+            ax.scatter(dates, head, marker=".", label='SIMULATED EQUIVALENT',  facecolors='none', edgecolors='b', s=14, linewidths = 1, alpha = 0.8, zorder= 3)
 
 
             plt.ylim([min(head1)-100, max(head1) + 100])
