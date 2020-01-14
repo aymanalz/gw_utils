@@ -1,8 +1,8 @@
 import os, sys
 import matplotlib.pyplot as plt
 import flopy
-import general_util
-import hob_util
+from . import general_util
+from . import hob_util
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib
 matplotlib.rc('xtick', labelsize=14)

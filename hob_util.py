@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import flopy
 import collections
-from general_util import *
+from .general_util import *
 
 def get_hob_csv_flopy(mfname):
 
@@ -114,12 +114,11 @@ def in_hob_to_df(mfname = None, return_model = False):
         # read datasets 5 & 6. Index loop variable
         if irefsp0 > 0:
             itt = 1
-            irefsp0 -= 1
-            totim = sum(perlen[0:irefsp]) + toffset * tomulth
+            totim = sum(perlen[0:irefsp0]) + toffset * tomulth
             names = [obsnam]
             tsd = [totim, hob]
             nobs += 1
-            all_records.append([names[0], names[0], layer + 1, row + 1, col + 1, roff, coff, 1, irefsp0 + 1, totim, hob, mlay])
+            all_records.append([names[0], names[0], layer + 1, row + 1, col + 1, roff, coff, 1, irefsp0, totim, hob, mlay])
         else:
             names = []
             tsd = []

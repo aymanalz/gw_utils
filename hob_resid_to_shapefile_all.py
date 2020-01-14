@@ -9,8 +9,8 @@ import pandas as pd
 import flopy
 from flopy.utils.geometry import Polygon, LineString, Point
 from flopy.export.shapefile_utils import recarray2shp, shp2recarray
-import hob_util
-import general_util
+from . import hob_util
+from . import general_util
 
 
 def plot_hob_resid(mf):

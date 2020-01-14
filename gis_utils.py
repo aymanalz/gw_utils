@@ -1,4 +1,5 @@
 import os, sys
+import numpy as np
 from epsg_ident import EpsgIdent
 import pyproj
 import shapefile
@@ -48,4 +49,37 @@ def point_to_shapefile(df, shpfile = 'temp_shp.shp', xy_field = [], epsg = None)
         geoms.append(Point(x_, y_, 0))
     att_table = df.to_records()
     recarray2shp(att_table, geoms, shpfile, epsg=epsg)
+    pass
+
+def array_to_ascii_raster(mf, array, raster_file = 'rast_ascii.txt', ibound = None):
+    """
+
+    Parameters
+    ----------
+    mf : flopy object with grid that is georeferenced and the basic pacakge
+    array
+
+    Returns
+    -------
+
+    """
+    header = []
+    header.append("ncols         {}\n".format(mf.modelgrid.ncol))
+    header.append("nrows         {}\n".format(mf.modelgrid.nrow))
+    header.append("xllcorner     {}\n".format(mf.modelgrid.xoffset))
+    header.append("yllcorner     {}\n".format(mf.modelgrid.yoffset))
+    header.append("cellsize      {}\n".format(mf.modelgrid.delc[0]))
+    header.append("NODATA_value  -9999\n")
+
+    if not(ibound is None):
+        array[ibound==0] = -9999
+
+    fidw = open(raster_file, 'w')
+    fidw.writelines(header)
+    #np.savetxt(raster_file, array)
+    for line in array:
+        line2 = ' '.join(map(str, line))
+        fidw.write(line2)
+        fidw.write("\n")
+    fidw.close()
     pass
