@@ -3,7 +3,10 @@ import numpy as np
 import pandas as pd
 import flopy
 import collections
-from .general_util import *
+try:
+    from .general_util import *
+except:
+    from general_util import *
 
 def get_hob_csv_flopy(mfname):
 
