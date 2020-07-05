@@ -16,7 +16,7 @@ from . import general_util
 def plot_hob_resid(mf):
     pass
 
-def hob_resid_to_shapefile_all(mf, stress_period = [0,-1], shpname = 'hob_shapefile.shp'):
+def hob_resid_to_shapefile_all(mf, stress_period = [0,-1], shpname = 'hob_shapefile.shp', return_df = False):
 
     get_vertices = mf.modelgrid.get_cell_vertices
 
@@ -34,8 +34,6 @@ def hob_resid_to_shapefile_all(mf, stress_period = [0,-1], shpname = 'hob_shapef
         basename = os.path.basename(fn)
         if ".hob.out" in basename:
             hobout_df = pd.read_csv(fn, delim_whitespace=True)
-
-
 
 
     # loop over obs and compute residual error
@@ -66,10 +64,15 @@ def hob_resid_to_shapefile_all(mf, stress_period = [0,-1], shpname = 'hob_shapef
             geoms.append(Point(xy[0][0], xy[0][1], 0))
         all_rec.append(curr_hob.copy())
     all_rec = pd.concat(all_rec)
+    if return_df:
+        df_out = all_rec.copy()
     # here we generate csv file
     all_rec = all_rec.to_records()
     epsg = mf.modelgrid.epsg
     recarray2shp(all_rec, geoms, shpname, epsg=epsg)
+    if return_df:
+        return df_out
+
     xxx = 1
 
 

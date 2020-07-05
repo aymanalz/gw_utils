@@ -5,7 +5,7 @@ from gw_utils import *
 
 
 
-mfname = r"D:\Yucaipa_work\tran_mf3d_best10_18 - Copy24\yucaipa.nam"
+mfname = r"C:\work\Slave\increase_rech_end44\model\tran_mf3d\yucaipa.nam"
 mf = flopy.modflow.Modflow.load(mfname, model_ws = os.path.dirname(mfname) ,   load_only=['DIS', 'BAS6', 'MNW2'])
 
 sr = "xul:473715; yul:3771885; rotation:0; proj4_str:+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs ;" \
