@@ -48,6 +48,21 @@ def get_best_pars(pstMaster):
     bpar_df = bpar_df.set_index(['parnm'])
     return bpar_df
 
+def get_ipar(pstMaster, ipar):
+
+    # get parameters of iteration ipar
+    ipar_file = os.path.splitext(pstMaster.filename)[0] + '.ipar'
+
+    bpar_df = pd.read_csv(ipar_file)
+    bpar_df = bpar_df[bpar_df['iteration'] == ipar]
+    del (bpar_df['iteration'])
+    bpar_df = bpar_df.T
+    bpar_df['parnm'] = bpar_df.index.values
+    bpar_df['parval'] = bpar_df[ipar].values
+    bpar_df['offs'] = 0
+    bpar_df['scale'] = 1
+    return bpar_df
+
 def run_model_using_best_par(Masterfile, Slavefile ):
 
 
@@ -62,7 +77,39 @@ def run_model_using_best_par(Masterfile, Slavefile ):
 
 
     par.loc[:, "parval1_trans"] = (par.parval1 * par.scale) + par.offset
-    pairs = np.array(list(zip(pstSlave.template_files, pstSlave.input_files)))
+    pairs = []
+    for irow, row_record in pstSlave.model_input_data.iterrows():
+        pp = (row_record['pest_file'], row_record['model_file'])
+        pairs.append(pp)
+
+    pairs = np.array(pairs)
+    num_tpl = len(pairs)
+    slaveFolder = os.path.dirname(pstSlave.filename)
+    for tp_in in pairs:
+        pyemu.pst_utils.write_to_template(parvals = par["parval1_trans"],
+                                          tpl_file = os.path.join(slaveFolder, tp_in[0]),
+                                          in_file = os.path.join(slaveFolder, tp_in[1]))
+
+def run_model_using_ipar(Masterfile, Slavefile, ipar):
+
+
+
+    pstMaster = pyemu.Pst(Masterfile)
+    pstSlave = pyemu.Pst(Slavefile)
+
+    bpar = get_ipar(pstMaster, ipar)
+
+    par = pstSlave.parameter_data
+    par['parval1'] = bpar['parval']
+
+
+    par.loc[:, "parval1_trans"] = (par.parval1 * par.scale) + par.offset
+    pairs = []
+    for irow, row_record in pstSlave.model_input_data.iterrows():
+        pp = (row_record['pest_file'], row_record['model_file'])
+        pairs.append(pp)
+
+    pairs = np.array(pairs)
     num_tpl = len(pairs)
     slaveFolder = os.path.dirname(pstSlave.filename)
     for tp_in in pairs:

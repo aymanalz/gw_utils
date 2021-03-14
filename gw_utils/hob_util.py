@@ -8,10 +8,10 @@ try:
 except:
     from general_util import *
 
-def get_hob_csv_flopy(mfname):
-
-    mf = flopy.modflow.Modflow.load(mfname, load_only=['DIS', 'BAS6', 'HOB'])
-    xx = 1
+# def get_hob_csv_flopy(mfname):
+#
+#     mf = flopy.modflow.Modflow.load(mfname, load_only=['DIS', 'BAS6', 'HOB'])
+#     xx = 1
 
 def in_hob_to_df(mfname = None, return_model = False):
     """

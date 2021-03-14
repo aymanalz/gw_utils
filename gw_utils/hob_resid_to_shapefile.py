@@ -36,8 +36,6 @@ def hob_resid_to_shapefile(mf, stress_period = [0,-1], shpname = 'hob_shapefile.
             hobout_df = pd.read_csv(fn, delim_whitespace=True)
 
 
-
-
     # loop over obs and compute residual error
 
     obs_names = hobdf['Basename'].unique()
@@ -65,6 +63,6 @@ def hob_resid_to_shapefile(mf, stress_period = [0,-1], shpname = 'hob_shapefile.
     all_rec = all_rec.to_records()
     epsg = mf.modelgrid.epsg
     recarray2shp(all_rec, geoms, shpname, epsg=epsg)
-    xxx = 1
+
 
 

@@ -1,8 +1,12 @@
 import os, sys
 import numpy as np
-from epsg_ident import EpsgIdent
-import pyproj
-import shapefile
+try:
+    from epsg_ident import EpsgIdent
+    import pyproj
+    import shapefile
+except:
+    print ("Error import some GIS packages....")
+
 import flopy
 from flopy.utils.geometry import Polygon, LineString, Point
 from flopy.export.shapefile_utils import recarray2shp, shp2recarray
@@ -82,4 +86,3 @@ def array_to_ascii_raster(mf, array, raster_file = 'rast_ascii.txt', ibound = No
         fidw.write(line2)
         fidw.write("\n")
     fidw.close()
-    pass

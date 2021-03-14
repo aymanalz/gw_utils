@@ -37,10 +37,6 @@ def add_simulated_all_layers(ax, row, col, layers, hds_obj, start_date):
             ax.plot(dates, head, label= label, linewidth=0.8, alpha = 1.0, zorder=1)
 
 
-
-
-
-
 def add_simulated_multi_layer_heads(ax, row, col, layers, hds_obj, start_date):
     """
 
@@ -207,16 +203,3 @@ def plot_all_heads(mfname, start_date, end_date, pdf_file = 'all_water_levels4.p
             pdf.savefig()
 
             plt.close()
-            x = 1
-
-
-
-
-
-
-
-            pass
-
-
-
-    pass
