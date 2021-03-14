@@ -143,6 +143,5 @@ if __name__ == "__main__":
     run_model_using_best_par(Masterfile = Masterfile,
                              Slavefile = Slavefile )
 
-    xxx = 1
 
 

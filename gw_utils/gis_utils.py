@@ -5,7 +5,7 @@ try:
     import pyproj
     import shapefile
 except:
-    print ("Error import some GIS packages....")
+    print ("Error importing some GIS packages....")
 
 import flopy
 from flopy.utils.geometry import Polygon, LineString, Point
