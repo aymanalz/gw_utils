@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 
+
 """
     - General functions to produce and run all files needed to run a job on HTcondor
     - Input is a configuration file, that contains information to run the job.
