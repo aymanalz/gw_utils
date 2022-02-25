@@ -19,8 +19,8 @@ import sys
             |-- python scripts, modflow/gsflow/pest/...etc
             
     - The model folder consists of a  "Python Environment", model data, and python lib.
-    - The worker consists of a command that run an execuatble and all other data needed for this run to succeed.
-    - Usually the worker is zipped to speed up files transfere and when finished is unzipped.
+    - The worker consists of a command that run an executable and all other data needed for this run to succeed.
+    - Usually the worker is zipped to speed up files transfer and when finished is unzipped.
     - In the "Condor Info" section, all condor data is listed.
      
 """
@@ -279,5 +279,5 @@ def assemble_condor_job(config):
     pass
 
 
-def assemble__run_job(config):
+def run_job(conf_file):
     pass
