@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Button, RadioButtons, CheckButtons
 from flopy.plot import plotutil
-
+from gw_utils.general_util import get_mf_files
+from gw_utils import plot_heads
 class D3_info(object):
     def __init__(self):
         pass
@@ -17,13 +18,18 @@ class D3_info(object):
         labels = [ '3D Grid', 'T', 'LogT' ]
         pass
 
+
+
 class Vis(object):
     def __init__(self, fn):
         mf = flopy.modflow.Modflow.load(fn, model_ws=os.path.dirname(fn), load_only=['DIS', 'BAS6', 'UPW'])
-        mf_files = gw_utils.get_mf_files(fn)
+        mf_files = get_mf_files(fn)
         hds_fn = mf_files['hds'][1]
-        hob_out_fn = mf_files['HOB'][1]
-        self.fn_hobOut = hob_out_fn
+        try:
+            hob_out_fn = mf_files['HOB'][1]
+            self.fn_hobOut = hob_out_fn
+        except:
+            pass
         try:  # text file
             import flopy.utils.formattedfile as ff
             hds = ff.FormattedHeadFile(hds_fn, precision='single')
@@ -92,8 +98,11 @@ class Vis(object):
         self.LayerTxt = plt.text(0.8, 0.87, "Layer {}".format(self.curr_layer), fontsize=14,
                                  transform=plt.gcf().transFigure)
 
+
         self.TimeTxt = plt.text(0.2, 0.87, "Totim {}".format(self.all_times[self.curr_time_index]), fontsize=14,
                                  transform=plt.gcf().transFigure)
+        self.curr_layer = -1
+        self.chaneLayerDn()
 
         plt.show()
 
@@ -102,7 +111,7 @@ class Vis(object):
 
 
     def plot_thickness_trans(self):
-        thk = self.mf.dis.thickness.array
+        thk = self.mf.modelgrid.thick
         ib3d = self.mf.bas6.ibound.array
         ib3d[ib3d != 0] = 1
         hk = self.mf.upw.hk.array
@@ -131,7 +140,7 @@ class Vis(object):
         pass
 
     def plot_points(self, event):
-        from gw_utils import hob_output_to_df, in_hob_to_df # ugly
+        from gw_utils.hob_util import hob_output_to_df, in_hob_to_df # ugly
         fn = os.path.join(self.mf.model_ws, self.mf.namefile)
 
         self.hobin = in_hob_to_df(mfname = fn)
@@ -259,6 +268,9 @@ class Vis(object):
             for k in range(self.mf.nlay):
                 arr[k, :,:] = ttop - arr[k,:,:]
 
+        elif self.curr_label ==  'Grid Thickness':
+            arr = self.mf.modelgrid.thick
+
 
         return arr
 
@@ -285,10 +297,10 @@ class Vis(object):
         Ly = self.mf.dis.delc.array.sum()
         Lx = self.mf.dis.delr.array.sum()
         x = Lx * x / self.mf.ncol
-        y = Ly - Ly * y / self.mf.nrow
+        y = -Ly * y / self.mf.nrow
 
-        rr_cc1 = plotutil.findrowcolumn((x, y), self.mf.modelgrid.xyedges[0],
-                                        self.mf.modelgrid.xyedges[1])
+        modelgrid  = self.mf.modelgrid
+        rr_cc1 = modelgrid.intersect(x, y)
         self.fighydro, self.axhydro = plt.subplots()
 
         elevs = []
@@ -345,7 +357,7 @@ class Vis(object):
             self.plot_head_ts(event.xdata,event.ydata)
 
 
-    def chaneLayerDn(self, event):
+    def chaneLayerDn(self, event=1):
         self.curr_layer = self.curr_layer + 1
         if self.curr_layer > self.mf.nlay-1 :
             self.curr_layer = self.curr_layer - 1
@@ -452,7 +464,8 @@ class Vis(object):
 
 if __name__ == "__main__":
     #fn = r"D:\Models\San_Antonio\PEST_Runing_2\local_run\model\SACr.nam"
-    fn = r"C:\work\Slave\AfterReviewChanges\sweep_work_1700\workers_pool\worker_13\yuc_gsflow\yucaipa.nam"
+    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\GSFLOW\archive\current_version\windows\rr_tr.nam"
+    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\MODFLOW\modflow_calibration\ss_calibration\slave_dir\mf_dataset\rr_ss.nam"
 
     Vis(fn = fn)
     pass
