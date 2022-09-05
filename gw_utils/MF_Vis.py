@@ -464,8 +464,8 @@ class Vis(object):
 
 if __name__ == "__main__":
     #fn = r"D:\Models\San_Antonio\PEST_Runing_2\local_run\model\SACr.nam"
-    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\GSFLOW\archive\current_version\windows\rr_tr.nam"
-    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\MODFLOW\modflow_calibration\ss_calibration\slave_dir\mf_dataset\rr_ss.nam"
+    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\GSFLOW\archive\20220706_01\windows\rr_tr.nam"
+    #fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\MODFLOW\modflow_calibration\ss_calibration\slave_dir\mf_dataset\rr_ss.nam"
 
     Vis(fn = fn)
     pass

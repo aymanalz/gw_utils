@@ -16,6 +16,8 @@ def get_mf_files(mf_nam):
 
     for line in content:
         line = line.strip()
+        if line.strip() == '':
+            continue
         if line[0 ]=="#":
             continue # skip the comment line
         else:
