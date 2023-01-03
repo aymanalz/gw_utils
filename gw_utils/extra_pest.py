@@ -1,7 +1,6 @@
 import os, sys
 import numpy as np
 import pandas as pd
-sys.path.insert(0, r"D:\Models\San_Antonio\py_packages\pyemu")
 import pyemu
 
 def write_input_files(pst,pst_path='.'):
@@ -132,16 +131,24 @@ def update_pst_using_best_run(Masterfile, Slavefile, new_pst_file ):
 
     pstSlave.write(new_filename=new_pst_file)
 
+def run_model_using_realization_id(Masterfile, Slavefile, param_ensemble, realization = 1):
+
+    pass
+
 
 
 
 
 
 if __name__ == "__main__":
-    Masterfile = r"D:\Models\San_Antonio\PEST_Runing\Master\sa_run.pst"
-    Slavefile = r"D:\Models\San_Antonio\PEST_Runing\LocalRun\model\sa_run.pst"
-    run_model_using_best_par(Masterfile = Masterfile,
-                             Slavefile = Slavefile )
+    Masterfile = r"D:\Models\RussianRiver\ayman\RR_ies\model_main\GSFLOW\worker_dir_ies\pest\tr_mf.pst"
+    Slavefile = r"D:\Models\RussianRiver\ayman\RR_ies\model\GSFLOW\worker_dir_ies\pest\tr_mf.pst"
+    ens_file = r""
+    run_model_using_realization_id(Masterfile=Masterfile,
+                                   Slavefile=Slavefile,
+                                   param_ensemble=ens_file)
+    # run_model_using_best_par(Masterfile = Masterfile,
+    #                          Slavefile = Slavefile )
 
 
 
