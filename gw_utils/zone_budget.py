@@ -3,7 +3,7 @@ import shutil
 import pandas as pd
 import numpy as np
 import datetime
-from .general_util import get_mf_files
+from gw_utils.general_util import get_mf_files
 import matplotlib.pyplot as plt
 
 def generate_zone_file(fname = r'gw_zones.zon' , arr3d = None):
@@ -101,3 +101,23 @@ def run_zone_bud(mf_name, zone_arr, work_space):
 def read_csv_budget(bud_csv_file):
     df = pd.read_csv(bud_csv_file)
     return df
+
+def read_zone_file(fn):
+    """
+    return 3D layer of the zones
+    Parameters
+    ----------
+    fn
+
+    Returns
+    -------
+
+    """
+    fidw = open(fn, 'r')
+    fidw.readline().split()
+
+    fidw.close()
+
+
+
+read_zone_file(r"C:\Users\aalzraiee\Downloads\zone_bud_subbasins.zon")
