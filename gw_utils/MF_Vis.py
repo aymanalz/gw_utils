@@ -47,12 +47,15 @@ class Vis(object):
         fig, ax = plt.subplots()
         self.fig = fig
         self.ax = ax
+        self.axbox = self.ax.bbox._bbox
+
         self.all_times = self.hds.get_times()
 
         self.curr_time_index = 0
         self.curr_layer = 0
         self.togle_TS = 0
         self.curr_label = 'Grid Elev'
+        self.number_of_contours = 20
 
         mng = plt.get_current_fig_manager()
         mng.window.showMaximized()  # only windows
@@ -88,6 +91,14 @@ class Vis(object):
         radio = RadioButtons(rax, ('Grid Elev', 'Heads', 'Drawdown', 'flow direction', 'Grid Thickness', 'IBOUND', 'STRT', 'HK', 'VK', 'SS', 'SY', 'GWDepth'))
         radio.on_clicked(self.data_mode)
 
+        axContour = plt.axes([0.01, 0.5, 0.05, 0.05])
+        self.axContour = Button(axContour, 'More Contour')
+        self.axContour.on_clicked(self.more_contours)
+
+        restView = plt.axes([0.01, 0.9, 0.05, 0.05])
+        self.restView = Button(restView, 'Reset View')
+        self.restView.on_clicked(self.reset_view)
+
         plt.text(0.01, 0.16, "Point Layer", fontsize=14, transform=plt.gcf().transFigure)
         cax = plt.axes([0.01, 0.001, 0.09, 0.15])
         self.CheckedPointlabels = []
@@ -102,12 +113,24 @@ class Vis(object):
         self.TimeTxt = plt.text(0.2, 0.87, "Totim {}".format(self.all_times[self.curr_time_index]), fontsize=14,
                                  transform=plt.gcf().transFigure)
         self.curr_layer = -1
+        self.xlimit = None
+        self.ylimit = None
         self.chaneLayerDn()
+        self.ax.invert_yaxis()
 
-        plt.show()
+        xx = 1
+        #plt.show()
 
     def strat_extra_frame(self, event):
         self.plot_thickness_trans()
+
+    def reset_view(self, event):
+        self.xlimit = [0, self.mf.ncol]
+        self.ylimit = [0, self.mf.nrow]
+        self.ax.set_xlim(self.xlimit[0], self.xlimit[1])
+        self.ax.set_ylim(self.ylimit[0], self.ylimit[1])
+        self.ax.invert_yaxis()
+
 
 
     def plot_thickness_trans(self):
@@ -277,6 +300,9 @@ class Vis(object):
     def data_mode(self, label):
         self.curr_label = label
 
+        self.update_fig()
+        print(self.curr_layer)
+
 
     def PotTS(self, event):
         if self.togle_TS == 0:
@@ -373,13 +399,21 @@ class Vis(object):
         self.update_fig()
         print(self.curr_layer)
 
+    def more_contours(self, event=1):
+        self.number_of_contours = self.number_of_contours + 1
+        self.update_fig()
+        print(self.curr_layer)
+
     def update_fig(self):
         arr = self.get_arr()
         #self.fig.suptitle("Totim = {} ".format(totim))
+        #self.ax.remove()
         if self.curr_label == 'flow direction':
             self._plot_dir(arr)
         else:
             self._plot_arr(arr)
+
+
 
     def _plot_dir(self, arr):
         self.ax.clear()
@@ -399,8 +433,9 @@ class Vis(object):
         f = lambda x: np.sign(x) * np.log10(1 + np.abs(x))
         im = self.ax.quiver(X, Y, f(dx), f(dy), color, scale=0.5, units="xy")
         #im =  self.ax.streamplot(X, Y, dx, dy)
+        np.min(arr)
 
-        self.ax.contour(arr, colors = 'k')
+        self.ax.contour(arr, colors = 'r')
         self.ax.invert_yaxis()
         self.LayerTxt.remove()
         self.LayerTxt = plt.text(0.8, 0.87, "Layer {}".format(self.curr_layer+1), fontsize=14,
@@ -418,14 +453,34 @@ class Vis(object):
         self.cax = self.fig.colorbar(im, fraction = 0.02, pad = 0.01, ax= self.ax, orientation =	'vertical' )
 
     def _plot_arr(self, arr):
-        self.ax.clear()
+        if self.xlimit is None:
+            self.xlimit = [0, self.mf.ncol]
+            self.ylimit = [0, self.mf.nrow]
+        else:
+            self.xlimit = self.ax.get_xlim()
+            self.ylimit = self.ax.get_ylim()
+
+        if hasattr(self, 'image'):
+            try:
+                self.image.remove()
+            except:
+                pass
+
+        if hasattr(self, 'contour_lines'):
+            try:
+                self.contour_lines.remove()
+            except:
+                pass
+
+        # self.ax.cla()
+        # self.ax.clear()
         arr = arr[self.curr_layer, :,:]
         ibound = self.mf.bas6.ibound.array[self.curr_layer, :,:]
         arr[ibound == 0] = np.NaN
-        im = self.ax.imshow(arr)
+        self.image = self.ax.imshow(arr)
 
 
-        self.ax.contour(arr, colors = 'k')
+        self.contour_lines = self.ax.contour(arr, colors = 'k', levels = self.number_of_contours)
 
         self.LayerTxt.remove()
         self.LayerTxt = plt.text(0.8, 0.87, "Layer {}".format(self.curr_layer+1), fontsize=14,
@@ -434,6 +489,9 @@ class Vis(object):
         self.TimeTxt = plt.text(0.2, 0.87, "Totim {}".format(self.all_times[self.curr_time_index]), fontsize=14,
                                  transform=plt.gcf().transFigure)
         self.fig.canvas.draw()
+        self.ax.set_xlim(self.xlimit[0], self.xlimit[1])
+        self.ax.set_ylim(self.ylimit[0], self.ylimit[1])
+
 
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         divider = make_axes_locatable(self.ax)
@@ -442,7 +500,7 @@ class Vis(object):
             del(divider)
         except:
             pass
-        self.cax = self.fig.colorbar(im, fraction = 0.02, pad = 0.01, ax= self.ax, orientation =	'vertical' )
+        self.cax = self.fig.colorbar(self.image, fraction = 0.02, pad = 0.01, ax= self.ax, orientation =	'vertical' )
 
     def plot_forward(self, event):
         self.curr_time_index = self.curr_time_index + 1
@@ -464,7 +522,7 @@ class Vis(object):
 
 if __name__ == "__main__":
     #fn = r"D:\Models\San_Antonio\PEST_Runing_2\local_run\model\SACr.nam"
-    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\GSFLOW\archive\20220706_01\windows\rr_tr.nam"
+    fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\GSFLOW\archive\current_version\GSFLOW\worker_dir_ies\gsflow_model_updated\windows\rr_tr.nam"
     #fn = r"D:\Workspace\projects\RussianRiver\RR_GSFLOW_GIT\RR_GSFLOW\MODFLOW\modflow_calibration\ss_calibration\slave_dir\mf_dataset\rr_ss.nam"
 
     Vis(fn = fn)
